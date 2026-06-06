@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewGPT — AI Mock Interviewer</title>
+  <meta name="description" content="InterviewGPT: Your AI-powered technical mock interviewer. Practice DSA, System Design, OOP, HR interviews and get instant feedback with scores." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #0a0a14;
+      --bg-secondary: #0f0f1e;
+      --bg-card: rgba(255,255,255,0.04);
+      --bg-card-hover: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.08);
+      --border-bright: rgba(139,92,246,0.4);
+      --purple: #8b5cf6;
+      --purple-light: #a78bfa;
+      --blue: #3b82f6;
+      --cyan: #06b6d4;
+      --green: #10b981;
+      --red: #ef4444;
+      --orange: #f59e0b;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --gradient-main: linear-gradient(135deg, #8b5cf6, #3b82f6);
+      --gradient-subtle: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(59,130,246,0.15));
+      --shadow-glow: 0 0 40px rgba(139,92,246,0.2);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow: hidden;
+    }
+
+    /* ─── LAYOUT ─────────────────────────────────────────── */
+    .app {
+      display: flex;
+      height: 100vh;
+      position: relative;
+    }
+
+    /* ─── SIDEBAR ─────────────────────────────────────────── */
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      z-index: 10;
+    }
+
+    .sidebar::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      left: -100px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 800;
+      background: var(--gradient-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--gradient-main);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Stats */
+    .stats-section {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stats-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 10px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .stat-card:hover { background: var(--bg-card-hover); }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 800;
+      background: var(--gradient-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Score Ring */
+    .score-section {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .score-ring-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .score-ring {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      flex-shrink: 0;
+    }
+
+    .score-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .score-ring-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-ring-num {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--purple-light);
+      line-height: 1;
+    }
+
+    .score-ring-label {
+      font-size: 8px;
+      color: var(--text-muted);
+    }
+
+    .score-details { flex: 1; }
+    .score-details-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .score-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .score-bar-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      width: 38px;
+      flex-shrink: 0;
+    }
+
+    .score-bar-track {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--gradient-main);
+      transition: width 0.6s ease;
+    }
+
+    /* Topics */
+    .topics-section {
+      padding: 16px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .topics-section::-webkit-scrollbar { width: 3px; }
+    .topics-section::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 99px; }
+
+    .topic-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: var(--radius-xs);
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      margin-bottom: 3px;
+    }
+
+    .topic-chip:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+      border-color: var(--border);
+    }
+
+    .topic-chip.active {
+      background: var(--gradient-subtle);
+      border-color: var(--border-bright);
+      color: var(--purple-light);
+    }
+
+    .topic-icon { font-size: 14px; width: 20px; text-align: center; }
+
+    .topic-badge {
+      margin-left: auto;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 99px;
+      background: rgba(139,92,246,0.2);
+      color: var(--purple-light);
+    }
+
+    /* New Interview Btn */
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-new {
+      width: 100%;
+      padding: 12px;
+      background: var(--gradient-main);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-new:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    /* ─── MAIN AREA ───────────────────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10,10,20,0.8);
+      backdrop-filter: blur(20px);
+      position: relative;
+      z-index: 5;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 12px; }
+
+    .interviewer-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--gradient-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      position: relative;
+    }
+
+    .online-dot {
+      position: absolute;
+      bottom: 1px;
+      right: 1px;
+      width: 10px;
+      height: 10px;
+      background: var(--green);
+      border-radius: 50%;
+      border: 2px solid var(--bg-primary);
+    }
+
+    .header-name { font-size: 15px; font-weight: 700; }
+    .header-status { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 4px; }
+    .header-status::before { content: ''; width: 6px; height: 6px; background: var(--green); border-radius: 50%; display: inline-block; }
+
+    .header-right { display: flex; align-items: center; gap: 10px; }
+
+    .mode-badge {
+      padding: 5px 12px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid;
+    }
+
+    .mode-badge.dsa { background: rgba(139,92,246,0.15); border-color: rgba(139,92,246,0.4); color: var(--purple-light); }
+    .mode-badge.hr { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: #34d399; }
+    .mode-badge.code { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #60a5fa; }
+    .mode-badge.system { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.4); color: #fbbf24; }
+
+    .timer-display {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: var(--bg-card);
+      padding: 5px 12px;
+      border-radius: var(--radius-xs);
+      border: 1px solid var(--border);
+    }
+
+    /* ─── CHAT AREA ───────────────────────────────────────── */
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-area::-webkit-scrollbar { width: 4px; }
+    .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* Messages */
+    .message {
+      display: flex;
+      gap: 12px;
+      animation: msgIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .message.user { flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      align-self: flex-end;
+    }
+
+    .msg-avatar.bot { background: var(--gradient-main); }
+    .msg-avatar.user { background: rgba(255,255,255,0.1); border: 1px solid var(--border); }
+
+    .msg-content { max-width: 75%; display: flex; flex-direction: column; gap: 4px; }
+    .message.user .msg-content { align-items: flex-end; }
+
+    .msg-bubble {
+      padding: 14px 18px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.65;
+      position: relative;
+      word-wrap: break-word;
+    }
+
+    .message.bot .msg-bubble {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.user .msg-bubble {
+      background: var(--gradient-main);
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      padding: 0 4px;
+    }
+
+    /* Feedback Card */
+    .feedback-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .feedback-header {
+      padding: 12px 16px;
+      background: rgba(139,92,246,0.08);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .feedback-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--purple-light);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .score-pill {
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .score-pill.high { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    .score-pill.mid { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    .score-pill.low { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+
+    .feedback-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    .fb-section { font-size: 13px; line-height: 1.6; }
+    .fb-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .fb-section-title.strength { color: var(--green); }
+    .fb-section-title.improve { color: var(--orange); }
+    .fb-section-title.ideal { color: var(--cyan); }
+
+    .fb-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .fb-list li {
+      padding: 6px 10px;
+      border-radius: var(--radius-xs);
+      font-size: 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .fb-list.strength li { background: rgba(16,185,129,0.07); }
+    .fb-list.improve li { background: rgba(245,158,11,0.07); }
+
+    .fb-list li::before {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .fb-list.strength li::before { content: '✓'; color: var(--green); font-weight: 700; }
+    .fb-list.improve li::before { content: '→'; color: var(--orange); font-weight: 700; }
+
+    .ideal-box {
+      background: rgba(6,182,212,0.07);
+      border: 1px solid rgba(6,182,212,0.2);
+      border-radius: var(--radius-xs);
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-primary);
+    }
+
+    /* Code block */
+    .code-block {
+      background: #0d0d1a;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      padding: 14px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      color: #c9d1d9;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+
+    /* Options */
+    .options-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 48px;
+    }
+
+    .option-btn {
+      padding: 10px 18px;
+      border-radius: 99px;
+      border: 1px solid var(--border-bright);
+      background: var(--gradient-subtle);
+      color: var(--purple-light);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .option-btn:hover {
+      background: rgba(139,92,246,0.25);
+      border-color: var(--purple);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(139,92,246,0.25);
+    }
+
+    .option-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+      transform: none;
+    }
+
+    /* Typing indicator */
+    .typing {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: msgIn 0.3s both;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 5px;
+      padding: 14px 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--purple);
+      animation: dotBounce 1.4s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dotBounce {
+      0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ─── INPUT AREA ──────────────────────────────────────── */
+    .input-area {
+      padding: 16px 24px 20px;
+      border-top: 1px solid var(--border);
+      background: rgba(10,10,20,0.9);
+      backdrop-filter: blur(20px);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .input-box {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      resize: none;
+      outline: none;
+      max-height: 140px;
+      min-height: 52px;
+      transition: border-color 0.2s;
+      line-height: 1.5;
+    }
+
+    .input-box::placeholder { color: var(--text-muted); }
+
+    .input-box:focus {
+      border-color: var(--border-bright);
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+    }
+
+    .send-btn {
+      width: 52px;
+      height: 52px;
+      background: var(--gradient-main);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .send-btn:active { transform: scale(0.95); }
+
+    .input-hints {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .hint-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    kbd {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 10px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ─── WELCOME SCREEN ──────────────────────────────────── */
+    .welcome-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 32px;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .welcome-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--gradient-main);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      box-shadow: var(--shadow-glow);
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .welcome-title {
+      font-size: 36px;
+      font-weight: 800;
+      background: var(--gradient-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome-sub {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 500px;
+      line-height: 1.6;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      text-align: left;
+      transition: all 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-bright);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon { font-size: 22px; margin-bottom: 8px; }
+    .feature-title { font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .feature-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+
+    .start-btn {
+      padding: 16px 48px;
+      background: var(--gradient-main);
+      border: none;
+      border-radius: var(--radius);
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .start-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 40px rgba(139,92,246,0.5);
+    }
+
+    /* ─── DIVIDER ─────────────────────────────────────────── */
+    .chat-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .chat-divider::before, .chat-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ─── RESPONSIVE ──────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .welcome-title { font-size: 26px; }
+    }
+
+    /* ─── SCROLLBAR ───────────────────────────────────────── */
+    * { scrollbar-width: thin; scrollbar-color: rgba(139,92,246,0.3) transparent; }
+
+    /* Highlight syntax */
+    .kw { color: #c792ea; }
+    .fn { color: #82aaff; }
+    .str { color: #c3e88d; }
+    .cm { color: #546e7a; }
+    .num { color: #f78c6c; }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-title">
+        <div class="logo-icon">🤖</div>
+        InterviewGPT
+      </div>
+      <div class="logo-sub">AI-Powered Mock Interviewer</div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-title">Session Stats</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-questions">0</div>
+          <div class="stat-label">Questions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-avg">—</div>
+          <div class="stat-label">Avg Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-best">—</div>
+          <div class="stat-label">Best Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-level">—</div>
+          <div class="stat-label">Level</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="score-section">
+      <div class="score-ring-wrap">
+        <div class="score-ring">
+          <svg width="64" height="64" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6"/>
+            <circle id="ring-circle" cx="32" cy="32" r="26" fill="none" stroke="url(#ringGrad)" stroke-width="6"
+              stroke-dasharray="163.4" stroke-dashoffset="163.4" stroke-linecap="round" transition="stroke-dashoffset 0.6s ease"/>
+            <defs>
+              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#8b5cf6"/>
+                <stop offset="100%" stop-color="#3b82f6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="score-ring-text">
+            <div class="score-ring-num" id="ring-num">0%</div>
+            <div class="score-ring-label">Score</div>
+          </div>
+        </div>
+        <div class="score-details">
+          <div class="score-details-title">Performance</div>
+          <div class="score-bar-row">
+            <div class="score-bar-label">Accuracy</div>
+            <div class="score-bar-track"><div class="score-bar-fill" id="bar-accuracy" style="width:0%"></div></div>
+          </div>
+          <div class="score-bar-row">
+            <div class="score-bar-label">Clarity</div>
+            <div class="score-bar-track"><div class="score-bar-fill" id="bar-clarity" style="width:0%"></div></div>
+          </div>
+          <div class="score-bar-row">
+            <div class="score-bar-label">Depth</div>
+            <div class="score-bar-track"><div class="score-bar-fill" id="bar-depth" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topics-section">
+      <div class="stats-title">Topics</div>
+      <div id="topic-list">
+        <div class="topic-chip" data-topic="dsa">
+          <span class="topic-icon">🧮</span> DSA
+          <span class="topic-badge" id="badge-dsa">—</span>
+        </div>
+        <div class="topic-chip" data-topic="oop">
+          <span class="topic-icon">📦</span> OOP
+          <span class="topic-badge" id="badge-oop">—</span>
+        </div>
+        <div class="topic-chip" data-topic="dbms">
+          <span class="topic-icon">🗄️</span> DBMS
+          <span class="topic-badge" id="badge-dbms">—</span>
+        </div>
+        <div class="topic-chip" data-topic="os">
+          <span class="topic-icon">💻</span> OS
+          <span class="topic-badge" id="badge-os">—</span>
+        </div>
+        <div class="topic-chip" data-topic="cn">
+          <span class="topic-icon">🌐</span> Networks
+          <span class="topic-badge" id="badge-cn">—</span>
+        </div>
+        <div class="topic-chip" data-topic="webdev">
+          <span class="topic-icon">🕸️</span> Web Dev
+          <span class="topic-badge" id="badge-webdev">—</span>
+        </div>
+        <div class="topic-chip" data-topic="aiml">
+          <span class="topic-icon">🧠</span> AI/ML
+          <span class="topic-badge" id="badge-aiml">—</span>
+        </div>
+        <div class="topic-chip" data-topic="hr">
+          <span class="topic-icon">🤝</span> HR / Behavioral
+          <span class="topic-badge" id="badge-hr">—</span>
+        </div>
+        <div class="topic-chip" data-topic="system">
+          <span class="topic-icon">⚙️</span> System Design
+          <span class="topic-badge" id="badge-system">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="btn-new" id="btn-new-interview">
+        ➕ New Interview Session
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <div class="interviewer-avatar">
+          🤖
+          <div class="online-dot"></div>
+        </div>
+        <div>
+          <div class="header-name">InterviewGPT</div>
+          <div class="header-status">Live Interview Session</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="mode-badge dsa" id="current-mode-badge">Ready</span>
+        <div class="timer-display" id="timer">00:00</div>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-area" id="chat-area">
+      <!-- Welcome screen shown initially -->
+      <div class="welcome-screen" id="welcome-screen">
+        <div class="welcome-icon">🎯</div>
+        <div>
+          <h1 class="welcome-title">InterviewGPT</h1>
+          <p class="welcome-sub">Your AI-powered technical mock interviewer. Get real interview experience with instant detailed feedback and scoring.</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🧮</div>
+            <div class="feature-title">DSA & Algorithms</div>
+            <div class="feature-desc">Arrays, trees, graphs, dynamic programming & more</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">💡</div>
+            <div class="feature-title">Smart Feedback</div>
+            <div class="feature-desc">Detailed analysis with scores, strengths & improvements</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📈</div>
+            <div class="feature-title">Track Progress</div>
+            <div class="feature-desc">Monitor performance across topics and difficulty levels</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🤝</div>
+            <div class="feature-title">HR Interviews</div>
+            <div class="feature-desc">Behavioral questions with STAR method evaluation</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚙️</div>
+            <div class="feature-title">System Design</div>
+            <div class="feature-desc">Scalability, architecture & design patterns</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🏢</div>
+            <div class="feature-title">Company-Specific</div>
+            <div class="feature-desc">Tailored for FAANG, startups & more</div>
+          </div>
+        </div>
+        <button class="start-btn" id="start-btn">
+          🚀 Start Interview Session
+        </button>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-area" id="input-area" style="display:none">
+      <div class="input-row">
+        <textarea
+          class="input-box"
+          id="user-input"
+          placeholder="Type your answer here... (Shift+Enter for new line)"
+          rows="1"
+        ></textarea>
+        <button class="send-btn" id="send-btn" title="Send Answer">
+          ➤
+        </button>
+      </div>
+      <div class="input-hints">
+        <span class="hint-tag">⏎ Send</span>
+        <span class="hint-tag"><kbd>Shift</kbd>+<kbd>Enter</kbd> New line</span>
+        <span class="hint-tag">💡 Be as detailed as possible</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  INTERVIEW DATA BANK
+// ═══════════════════════════════════════════════════
+
+const TOPICS = {
+  dsa: {
+    label: 'DSA', icon: '🧮', badge: 'dsa',
+    questions: [
+      {
+        q: "What is the difference between an Array and a Linked List? When would you prefer one over the other?",
+        difficulty: 'easy',
+        keywords: ['array','linked list','random access','O(1)','O(n)','dynamic','static','memory','contiguous','pointer'],
+        ideal: "An Array stores elements in contiguous memory, allowing O(1) random access via index but O(n) insertion/deletion in the middle. A Linked List stores elements in nodes with pointers; it allows O(1) insertion/deletion at known positions but O(n) access. Choose arrays when you need fast access and know the size upfront. Choose linked lists when you need frequent insertions/deletions and don't need random access.",
+        followUp: "What is the time complexity of searching in an unsorted array vs a sorted array using binary search?"
+      },
+      {
+        q: "Explain what a Hash Table is and how collision resolution works.",
+        difficulty: 'easy',
+        keywords: ['hash','key','value','collision','chaining','open addressing','load factor','hash function','bucket'],
+        ideal: "A Hash Table maps keys to values using a hash function. The hash function converts a key into an index into an array. Collisions occur when two keys hash to the same index. Resolution strategies include: (1) Chaining – each bucket holds a linked list of entries. (2) Open Addressing – probe for the next available slot (linear probing, quadratic probing, double hashing). Load factor (n/capacity) determines when to resize. Average O(1) for insert/search/delete.",
+        followUp: "What is the average and worst-case time complexity of operations in a Hash Table?"
+      },
+      {
+        q: "Explain Binary Search Tree (BST). What are its time complexities for insert, search, and delete?",
+        difficulty: 'medium',
+        keywords: ['binary','search','tree','left','right','O(log n)','O(n)','balanced','height','BST','node'],
+        ideal: "A BST is a binary tree where each node's left subtree contains keys less than the node's key, and the right subtree contains keys greater. Operations: Search O(h), Insert O(h), Delete O(h) where h is the height. In a balanced BST, h = O(log n). In the worst case (skewed tree), h = O(n). Self-balancing BSTs like AVL trees and Red-Black trees maintain O(log n) height.",
+        followUp: "How does an AVL tree differ from a regular BST? What rotations does it use?"
+      },
+      {
+        q: "What is dynamic programming? Explain with a classic example.",
+        difficulty: 'medium',
+        keywords: ['overlapping','subproblems','memoization','tabulation','optimal','fibonacci','knapsack','bottom-up','top-down','DP'],
+        ideal: "Dynamic Programming (DP) solves problems by breaking them into overlapping subproblems and storing results (memoization/tabulation) to avoid redundant work. Two approaches: Top-down (recursion + memo) and Bottom-up (iterative table). Classic example: Fibonacci — without DP it's O(2^n), with memo it's O(n). Another example: 0/1 Knapsack — decide for each item whether to include it, building a 2D DP table of size n×W.",
+        followUp: "Can you explain the Longest Common Subsequence problem and its DP solution?"
+      },
+      {
+        q: "Explain graph traversal algorithms BFS and DFS. What are their time and space complexities?",
+        difficulty: 'medium',
+        keywords: ['BFS','DFS','queue','stack','visited','breadth','depth','O(V+E)','shortest path','cycle'],
+        ideal: "BFS (Breadth First Search) explores level-by-level using a queue. DFS (Depth First Search) explores as deep as possible using a stack or recursion. Both have O(V+E) time and O(V) space. BFS finds shortest paths in unweighted graphs. DFS is useful for cycle detection, topological sort, and finding connected components. BFS uses more memory for wide graphs; DFS uses more for deep graphs.",
+        followUp: "How would you detect a cycle in a directed graph using DFS?"
+      }
+    ]
+  },
+  oop: {
+    label: 'OOP', icon: '📦', badge: 'oop',
+    questions: [
+      {
+        q: "Explain the four pillars of Object-Oriented Programming.",
+        difficulty: 'easy',
+        keywords: ['encapsulation','inheritance','polymorphism','abstraction','class','object','method','hide','override'],
+        ideal: "The four pillars are: (1) Encapsulation – bundling data and methods together, hiding internal state via access modifiers (private, public). (2) Inheritance – a child class inherits attributes and methods from a parent class, enabling code reuse. (3) Polymorphism – objects of different types can be treated as a common type; achieved via method overriding (runtime) and overloading (compile-time). (4) Abstraction – hiding complex implementation details, exposing only relevant interfaces via abstract classes or interfaces.",
+        followUp: "What is the difference between an abstract class and an interface?"
+      },
+      {
+        q: "What is the difference between method overloading and method overriding?",
+        difficulty: 'easy',
+        keywords: ['overloading','overriding','compile','runtime','signature','parent','child','polymorphism','static'],
+        ideal: "Method Overloading (compile-time polymorphism) – same method name, different parameters within the same class. Resolved at compile time. Method Overriding (runtime polymorphism) – subclass redefines a method from the parent class with the same signature. Resolved at runtime using dynamic dispatch. Overloading is about multiple methods with same name; overriding is about redefining inherited behavior.",
+        followUp: "Can you override a static method in Java? Why or why not?"
+      },
+      {
+        q: "What is the SOLID principle in software design?",
+        difficulty: 'medium',
+        keywords: ['single','open','liskov','interface','dependency','SOLID','responsibility','substitution','segregation','inversion'],
+        ideal: "SOLID stands for: (S) Single Responsibility – a class should have one reason to change. (O) Open/Closed – open for extension, closed for modification. (L) Liskov Substitution – subclasses must be substitutable for their base class. (I) Interface Segregation – clients shouldn't depend on interfaces they don't use. (D) Dependency Inversion – depend on abstractions, not concretions. These principles lead to maintainable, scalable, loosely coupled code.",
+        followUp: "Can you give a real-world example of violating the Single Responsibility Principle?"
+      }
+    ]
+  },
+  dbms: {
+    label: 'DBMS', icon: '🗄️', badge: 'dbms',
+    questions: [
+      {
+        q: "What is normalization in DBMS? Explain 1NF, 2NF, and 3NF.",
+        difficulty: 'easy',
+        keywords: ['normalization','1NF','2NF','3NF','redundancy','dependency','functional','atomic','primary key','anomaly'],
+        ideal: "Normalization organizes a relational database to reduce redundancy and improve integrity. 1NF: Each column contains atomic values, no repeating groups. 2NF: Must be in 1NF and every non-key attribute must be fully functionally dependent on the entire primary key (no partial dependency). 3NF: Must be in 2NF and no transitive dependencies (non-key attributes depending on other non-key attributes). Higher normal forms (BCNF, 4NF) address more complex dependencies.",
+        followUp: "What is the difference between TRUNCATE, DELETE, and DROP in SQL?"
+      },
+      {
+        q: "What are ACID properties in database transactions?",
+        difficulty: 'easy',
+        keywords: ['atomicity','consistency','isolation','durability','transaction','commit','rollback','ACID'],
+        ideal: "ACID properties ensure reliable database transactions: Atomicity – all operations in a transaction succeed or all fail (no partial updates). Consistency – a transaction brings the database from one valid state to another, maintaining all rules. Isolation – concurrent transactions execute as if they were sequential; changes are not visible to other transactions until committed. Durability – once committed, changes persist even after system failure (via write-ahead logging).",
+        followUp: "What is the difference between optimistic and pessimistic locking?"
+      },
+      {
+        q: "Explain the difference between INNER JOIN, LEFT JOIN, RIGHT JOIN, and FULL JOIN.",
+        difficulty: 'easy',
+        keywords: ['INNER','LEFT','RIGHT','FULL','JOIN','NULL','match','rows','table','intersection'],
+        ideal: "INNER JOIN: Returns only rows where there's a match in both tables. LEFT JOIN: Returns all rows from the left table and matched rows from the right; NULLs for non-matches on the right. RIGHT JOIN: Opposite of LEFT JOIN. FULL OUTER JOIN: Returns all rows from both tables; NULLs where no match exists. CROSS JOIN: Cartesian product of both tables.",
+        followUp: "How would you find duplicate records in a SQL table?"
+      }
+    ]
+  },
+  os: {
+    label: 'OS', icon: '💻', badge: 'os',
+    questions: [
+      {
+        q: "What is the difference between a process and a thread?",
+        difficulty: 'easy',
+        keywords: ['process','thread','memory','context','switch','overhead','shared','stack','heap','PCB','lightweight'],
+        ideal: "A Process is an independent program in execution with its own memory space (code, data, heap, stack). A Thread is a unit of execution within a process; threads of the same process share memory (code, data, heap) but have their own stack and registers. Threads are lighter than processes — context switching between threads is faster. Processes provide isolation but are heavier to create. Multi-threading enables parallelism within a process.",
+        followUp: "What is a race condition and how can it be prevented?"
+      },
+      {
+        q: "Explain deadlock and the four necessary conditions for it to occur.",
+        difficulty: 'medium',
+        keywords: ['deadlock','mutual exclusion','hold and wait','no preemption','circular wait','prevention','detection','avoidance'],
+        ideal: "Deadlock is a situation where processes are stuck waiting for each other indefinitely. Four necessary conditions (Coffman conditions): (1) Mutual Exclusion – resources are non-shareable. (2) Hold and Wait – a process holds resources while waiting for others. (3) No Preemption – resources can't be forcibly taken. (4) Circular Wait – a circular chain of processes each waiting on the next. Prevention breaks any one condition; Avoidance uses algorithms like Banker's Algorithm.",
+        followUp: "What is the Banker's Algorithm and when is it used?"
+      }
+    ]
+  },
+  cn: {
+    label: 'Networks', icon: '🌐', badge: 'cn',
+    questions: [
+      {
+        q: "Explain the OSI model and the role of each layer.",
+        difficulty: 'easy',
+        keywords: ['physical','data link','network','transport','session','presentation','application','OSI','layer','7'],
+        ideal: "The OSI model has 7 layers: (1) Physical – transmits raw bits over physical medium. (2) Data Link – node-to-node data transfer, MAC addressing, error detection. (3) Network – routing and logical addressing (IP). (4) Transport – end-to-end communication, TCP/UDP, segmentation. (5) Session – manages sessions between applications. (6) Presentation – data translation, encryption, compression. (7) Application – interfaces with end-user applications (HTTP, FTP, DNS). TCP/IP model condenses these into 4 layers.",
+        followUp: "What is the difference between TCP and UDP? When would you use each?"
+      },
+      {
+        q: "What happens when you type a URL in a browser and press Enter?",
+        difficulty: 'medium',
+        keywords: ['DNS','TCP','HTTP','IP','browser','server','request','response','HTML','cache','handshake'],
+        ideal: "1. Browser checks DNS cache; if not found, queries DNS resolver → root → TLD → authoritative server to get IP. 2. TCP three-way handshake (SYN, SYN-ACK, ACK) established with server. 3. For HTTPS, TLS handshake occurs. 4. Browser sends HTTP GET request. 5. Server processes request and sends back HTTP response (HTML, CSS, JS). 6. Browser parses HTML, builds DOM, downloads assets, renders page. 7. Connection closed (or kept alive).",
+        followUp: "What is the difference between HTTP/1.1, HTTP/2, and HTTP/3?"
+      }
+    ]
+  },
+  webdev: {
+    label: 'Web Dev', icon: '🕸️', badge: 'webdev',
+    questions: [
+      {
+        q: "Explain the difference between REST and GraphQL APIs.",
+        difficulty: 'easy',
+        keywords: ['REST','GraphQL','endpoint','query','mutation','over-fetching','under-fetching','JSON','schema'],
+        ideal: "REST uses multiple endpoints (e.g., /users, /posts) with fixed response shapes; can lead to over-fetching (too much data) or under-fetching (need multiple calls). GraphQL uses a single endpoint where clients specify exactly what data they need, reducing over/under-fetching. REST is simpler and cacheable by default; GraphQL is more flexible but complex. REST is ideal for simple CRUD; GraphQL excels for complex, nested data requirements.",
+        followUp: "What are HTTP methods (GET, POST, PUT, PATCH, DELETE) and when should each be used?"
+      },
+      {
+        q: "What is the event loop in JavaScript? How does it handle asynchronous operations?",
+        difficulty: 'medium',
+        keywords: ['event loop','call stack','callback queue','microtask','promise','setTimeout','async','await','non-blocking'],
+        ideal: "JavaScript is single-threaded. The event loop continuously checks if the call stack is empty. When async operations (setTimeout, fetch, etc.) complete, their callbacks go to the task queue (macrotasks). Promises and queueMicrotask use the microtask queue (higher priority). The event loop processes all microtasks after each macrotask. This enables non-blocking I/O. async/await is syntactic sugar over Promises, making async code look synchronous.",
+        followUp: "What is the difference between a Promise and an Observable?"
+      },
+      {
+        q: "Explain CSS Box Model and the difference between `content-box` and `border-box`.",
+        difficulty: 'easy',
+        keywords: ['box model','margin','border','padding','content','width','height','box-sizing'],
+        ideal: "The CSS Box Model consists of: Content → Padding → Border → Margin. content-box (default): width/height applies to content only; padding and border are added on top. border-box: width/height includes content + padding + border, making layouts more predictable. `box-sizing: border-box` is commonly set globally as it simplifies element sizing. Margin creates space outside the border and doesn't affect element size.",
+        followUp: "What is the difference between `display: flex` and `display: grid`?"
+      }
+    ]
+  },
+  aiml: {
+    label: 'AI/ML', icon: '🧠', badge: 'aiml',
+    questions: [
+      {
+        q: "What is the difference between supervised, unsupervised, and reinforcement learning?",
+        difficulty: 'easy',
+        keywords: ['supervised','unsupervised','reinforcement','labeled','unlabeled','reward','agent','clustering','regression','classification'],
+        ideal: "Supervised Learning: trains on labeled data (input-output pairs); learns to map inputs to outputs. Examples: regression, classification. Unsupervised Learning: trains on unlabeled data; finds hidden patterns or structure. Examples: clustering (K-Means), dimensionality reduction (PCA). Reinforcement Learning: an agent learns by interacting with an environment, receiving rewards/penalties. Examples: game playing, robotics. Semi-supervised combines small labeled data with large unlabeled data.",
+        followUp: "What is overfitting and how can you prevent it?"
+      },
+      {
+        q: "Explain the bias-variance tradeoff in machine learning.",
+        difficulty: 'medium',
+        keywords: ['bias','variance','overfitting','underfitting','tradeoff','regularization','complexity','generalize','training','test'],
+        ideal: "Bias is error from overly simplistic models (underfitting) — high bias means the model doesn't fit training data well. Variance is sensitivity to small fluctuations in training data (overfitting) — high variance means the model fits training data too well but fails on new data. The tradeoff: increasing model complexity reduces bias but increases variance. Optimal model balances both. Techniques to reduce variance: regularization (L1/L2), dropout, cross-validation, more data.",
+        followUp: "What is L1 (Lasso) vs L2 (Ridge) regularization? When would you use each?"
+      }
+    ]
+  },
+  hr: {
+    label: 'HR / Behavioral', icon: '🤝', badge: 'hr',
+    questions: [
+      {
+        q: "Tell me about yourself and your professional background.",
+        difficulty: 'easy',
+        keywords: ['experience','skills','project','background','passionate','worked','built','team','goal'],
+        ideal: "A strong answer follows the Past-Present-Future structure: Start with your educational/professional background (past), describe your current role/skills (present), and explain what you're looking for and why this role aligns (future). Keep it under 2 minutes, professional, and relevant to the job. Highlight key achievements with impact metrics where possible.",
+        followUp: "Why are you interested in this role and our company specifically?",
+        isHR: true
+      },
+      {
+        q: "Describe a challenging technical problem you faced and how you resolved it.",
+        difficulty: 'easy',
+        keywords: ['problem','challenge','solution','approached','learned','team','result','impact','debugged','fixed'],
+        ideal: "Use the STAR method: Situation (context), Task (your responsibility), Action (specific steps you took — include technical details), Result (measurable outcome). Focus on your personal contribution, the technical depth of the solution, and what you learned. Interviewers look for problem-solving methodology, resilience, and learning mindset.",
+        followUp: "What's the biggest technical mistake you've made and what did you learn from it?",
+        isHR: true
+      },
+      {
+        q: "Where do you see yourself in 5 years?",
+        difficulty: 'easy',
+        keywords: ['grow','lead','technical','expert','contribute','mentor','architecture','skills','goal','develop'],
+        ideal: "Show ambition aligned with the company's growth. Example: 'I want to deepen my expertise in distributed systems and eventually take on a tech lead role, mentoring junior developers while contributing to architectural decisions. I'm excited about growing with a company that values innovation.' Avoid answers that show you're looking to leave quickly or have no clear direction.",
+        followUp: "How do you handle work-life balance during high-pressure project phases?",
+        isHR: true
+      }
+    ]
+  },
+  system: {
+    label: 'System Design', icon: '⚙️', badge: 'system',
+    questions: [
+      {
+        q: "How would you design a URL shortening service like bit.ly?",
+        difficulty: 'medium',
+        keywords: ['hash','redirect','database','cache','load balancer','scale','unique','collision','base62','DNS','CDN'],
+        ideal: "Key components: 1. API to accept long URL and return short code (base62 encoding of auto-incremented ID or hash). 2. Database to store mappings (NoSQL like Cassandra for scale). 3. Redirect service returning 301/302 HTTP response. 4. Caching layer (Redis) for frequently accessed URLs. 5. Load balancer for horizontal scaling. Considerations: collision handling, custom aliases, analytics, expiry, rate limiting. Estimate: 100M URLs, 1000 req/sec read, 100 write/sec.",
+        followUp: "How would you handle 1 billion URLs? What changes would you make to scale?"
+      },
+      {
+        q: "Design the architecture for a real-time chat application like WhatsApp.",
+        difficulty: 'hard',
+        keywords: ['WebSocket','message queue','database','delivery','storage','CDN','notification','presence','encryption','scale'],
+        ideal: "Key components: 1. WebSocket connections for real-time bidirectional communication. 2. Message queues (Kafka/RabbitMQ) for reliable delivery. 3. Database: NoSQL (Cassandra) for messages (write-heavy, time-series). 4. Media storage: CDN + object storage (S3). 5. Push notifications for offline users. 6. Presence service (Redis) for online status. 7. End-to-end encryption. 8. Horizontal scaling with consistent hashing for WebSocket servers. Handle: ordering, delivery receipts, group messaging.",
+        followUp: "How would you implement end-to-end encryption in this chat system?"
+      }
+    ]
+  }
+};
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+const state = {
+  phase: 'welcome',      // welcome, setup, interview
+  role: '',
+  level: '',
+  company: '',
+  currentTopic: '',
+  currentQuestionIdx: 0,
+  scores: [],
+  topicScores: {},
+  questionCount: 0,
+  awaitingAnswer: false,
+  setupStep: 0,
+  timerSec: 0,
+  timerInterval: null,
+  followUpMode: false,
+  followUpQuestion: '',
+  difficulty: 'easy',
+  weakTopics: [],
+  strongTopics: []
+};
+
+// ═══════════════════════════════════════════════════
+//  TIMER
+// ═══════════════════════════════════════════════════
+function startTimer() {
+  state.timerSec = 0;
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    state.timerSec++;
+    const m = String(Math.floor(state.timerSec / 60)).padStart(2,'0');
+    const s = String(state.timerSec % 60).padStart(2,'0');
+    document.getElementById('timer').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+// ═══════════════════════════════════════════════════
+//  STATS UPDATER
+// ═══════════════════════════════════════════════════
+function updateStats() {
+  document.getElementById('stat-questions').textContent = state.questionCount;
+
+  if (state.scores.length > 0) {
+    const avg = (state.scores.reduce((a,b) => a+b, 0) / state.scores.length).toFixed(1);
+    const best = Math.max(...state.scores);
+    document.getElementById('stat-avg').textContent = avg;
+    document.getElementById('stat-best').textContent = best;
+
+    const pct = Math.round((avg / 10) * 100);
+    document.getElementById('ring-num').textContent = pct + '%';
+    const circle = document.getElementById('ring-circle');
+    const circumference = 163.4;
+    circle.style.strokeDashoffset = circumference - (circumference * pct / 100);
+
+    document.getElementById('bar-accuracy').style.width = Math.min(100, pct + 5) + '%';
+    document.getElementById('bar-clarity').style.width = Math.min(100, pct - 3) + '%';
+    document.getElementById('bar-depth').style.width = Math.min(100, pct) + '%';
+  }
+
+  const levelMap = { easy: '🟢 Easy', medium: '🟡 Med', hard: '🔴 Hard' };
+  document.getElementById('stat-level').textContent = levelMap[state.difficulty] || '—';
+
+  // Topic badges
+  Object.entries(state.topicScores).forEach(([topic, scores]) => {
+    const el = document.getElementById('badge-' + topic);
+    if (el && scores.length) {
+      const avg = (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
+      el.textContent = avg;
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  DOM HELPERS
+// ═══════════════════════════════════════════════════
+const chatArea = document.getElementById('chat-area');
+
+function scrollDown() {
+  setTimeout(() => chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }), 50);
+}
+
+function now() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function addMessage(role, content, extra = '') {
+  const welcome = document.getElementById('welcome-screen');
+  if (welcome) welcome.remove();
+
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+  const avatarHtml = role === 'bot'
+    ? `<div class="msg-avatar bot">🤖</div>`
+    : `<div class="msg-avatar user">👤</div>`;
+  div.innerHTML = `
+    ${avatarHtml}
+    <div class="msg-content">
+      <div class="msg-bubble">${content}</div>
+      ${extra}
+      <div class="msg-time">${now()}</div>
+    </div>
+  `;
+  chatArea.appendChild(div);
+  scrollDown();
+  return div;
+}
+
+function showTyping() {
+  const div = document.createElement('div');
+  div.className = 'typing';
+  div.id = 'typing-indicator';
+  div.innerHTML = `
+    <div class="msg-avatar bot">🤖</div>
+    <div class="typing-dots">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  `;
+  chatArea.appendChild(div);
+  scrollDown();
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+function showOptions(options) {
+  const welcome = document.getElementById('welcome-screen');
+  if (welcome) welcome.remove();
+
+  const div = document.createElement('div');
+  div.className = 'options-row';
+  div.id = 'options-row';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt.label;
+    btn.dataset.value = opt.value;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+      handleUserMessage(opt.value, opt.label);
+    });
+    div.appendChild(btn);
+  });
+  chatArea.appendChild(div);
+  scrollDown();
+}
+
+function removeOptions() {
+  const o = document.getElementById('options-row');
+  if (o) o.remove();
+}
+
+function setModeBadge(text, cls) {
+  const b = document.getElementById('current-mode-badge');
+  b.textContent = text;
+  b.className = `mode-badge ${cls}`;
+}
+
+// ═══════════════════════════════════════════════════
+//  SCORE EVALUATOR
+// ═══════════════════════════════════════════════════
+function evaluateAnswer(answer, question) {
+  const lowerAnswer = answer.toLowerCase();
+  const lowerIdeal = question.ideal.toLowerCase();
+  const keywords = question.keywords;
+
+  let matched = keywords.filter(kw => lowerAnswer.includes(kw.toLowerCase()));
+  let keywordScore = Math.round((matched.length / keywords.length) * 10);
+
+  // Length bonus (detailed answers rewarded)
+  const wordCount = answer.trim().split(/\s+/).length;
+  let lengthBonus = 0;
+  if (wordCount > 80) lengthBonus = 1;
+  if (wordCount > 150) lengthBonus = 2;
+
+  let rawScore = Math.min(10, keywordScore + lengthBonus);
+
+  // Minimum 1 if any attempt
+  if (answer.trim().length > 5) rawScore = Math.max(rawScore, 1);
+
+  // Penalty for very short answers
+  if (wordCount < 10) rawScore = Math.max(1, rawScore - 2);
+
+  return { score: rawScore, matched, wordCount };
+}
+
+function buildFeedbackCard(score, matched, question, answer) {
+  const allKeywords = question.keywords;
+  const missed = allKeywords.filter(k => !matched.map(m=>m.toLowerCase()).includes(k.toLowerCase()));
+
+  let scoreClass = score >= 8 ? 'high' : score >= 5 ? 'mid' : 'low';
+  let scoreEmoji = score >= 8 ? '🌟' : score >= 5 ? '⚡' : '📚';
+
+  const strengths = [];
+  const improvements = [];
+
+  if (matched.length > 0) strengths.push(`Correctly covered: ${matched.slice(0,4).join(', ')}`);
+  if (answer.trim().split(/\s+/).length > 60) strengths.push('Provided a detailed, comprehensive response');
+  if (answer.toLowerCase().includes('example') || answer.toLowerCase().includes('e.g')) strengths.push('Used examples to support explanation');
+  if (strengths.length === 0) strengths.push('Made an attempt to answer the question');
+
+  if (missed.length > 0) improvements.push(`Missing key concepts: ${missed.slice(0,4).join(', ')}`);
+  if (answer.trim().split(/\s+/).length < 30) improvements.push('Expand your answer with more detail and examples');
+  if (!answer.toLowerCase().includes('complex') && !answer.toLowerCase().includes('O(')) improvements.push('Include time/space complexity analysis where relevant');
+  if (improvements.length === 0) improvements.push('Try to include even more edge cases in your answer');
+
+  return `
+    <div class="feedback-card">
+      <div class="feedback-header">
+        <span class="feedback-title">📊 Answer Analysis</span>
+        <span class="score-pill ${scoreClass}">${scoreEmoji} ${score}/10</span>
+      </div>
+      <div class="feedback-body">
+        <div class="fb-section">
+          <div class="fb-section-title strength">✅ Strengths</div>
+          <ul class="fb-list strength">
+            ${strengths.map(s => `<li>${s}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="fb-section">
+          <div class="fb-section-title improve">⚡ Areas for Improvement</div>
+          <ul class="fb-list improve">
+            ${improvements.map(i => `<li>${i}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="fb-section">
+          <div class="fb-section-title ideal">💡 Ideal Answer</div>
+          <div class="ideal-box">${question.ideal}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+//  SETUP FLOW
+// ═══════════════════════════════════════════════════
+const setupSteps = [
+  {
+    msg: `👋 Welcome to <strong>InterviewGPT</strong>! I'm your AI interview coach.<br><br>Let's set up your personalized session. <strong>What role are you preparing for?</strong>`,
+    options: [
+      { label: '💻 Software Engineer', value: 'Software Engineer' },
+      { label: '🧠 AI/ML Engineer', value: 'AI/ML Engineer' },
+      { label: '📊 Data Analyst', value: 'Data Analyst' },
+      { label: '🕸️ Web Developer', value: 'Web Developer' },
+      { label: '🔧 DevOps Engineer', value: 'DevOps Engineer' },
+    ]
+  },
+  {
+    msg: `Great choice! Now, <strong>what is your experience level?</strong>`,
+    options: [
+      { label: '🟢 Fresher (0–1 year)', value: 'fresher' },
+      { label: '🟡 Mid-Level (2–4 years)', value: 'mid' },
+      { label: '🔴 Senior (5+ years)', value: 'senior' },
+    ]
+  },
+  {
+    msg: `Perfect! Are you targeting a specific company? This helps me tailor the difficulty and style.`,
+    options: [
+      { label: '🟡 Google / DeepMind', value: 'Google' },
+      { label: '🟠 Amazon', value: 'Amazon' },
+      { label: '🔵 Microsoft', value: 'Microsoft' },
+      { label: '🔵 Meta', value: 'Meta' },
+      { label: '🚀 Startup', value: 'Startup' },
+      { label: '🌐 Any Company', value: 'general' },
+    ]
+  },
+  {
+    msg: `Excellent! <strong>Which topic would you like to start with?</strong>`,
+    options: [
+      { label: '🧮 DSA', value: 'dsa' },
+      { label: '📦 OOP', value: 'oop' },
+      { label: '🗄️ DBMS', value: 'dbms' },
+      { label: '💻 Operating Systems', value: 'os' },
+      { label: '🌐 Computer Networks', value: 'cn' },
+      { label: '🕸️ Web Development', value: 'webdev' },
+      { label: '🧠 AI/ML', value: 'aiml' },
+      { label: '🤝 HR / Behavioral', value: 'hr' },
+      { label: '⚙️ System Design', value: 'system' },
+    ]
+  }
+];
+
+function progressSetup(value, label) {
+  const step = state.setupStep;
+
+  if (step === 0) { state.role = value; }
+  else if (step === 1) { state.level = value; }
+  else if (step === 2) { state.company = value; }
+  else if (step === 3) {
+    state.currentTopic = value;
+    startInterview(value);
+    return;
+  }
+
+  state.setupStep++;
+  const nextStep = setupSteps[state.setupStep];
+
+  setTimeout(() => {
+    showTyping();
+    setTimeout(() => {
+      removeTyping();
+      addMessage('bot', nextStep.msg);
+      showOptions(nextStep.options);
+    }, 900);
+  }, 300);
+}
+
+// ═══════════════════════════════════════════════════
+//  INTERVIEW ENGINE
+// ═══════════════════════════════════════════════════
+function startInterview(topic) {
+  state.phase = 'interview';
+  state.currentTopic = topic;
+  state.currentQuestionIdx = 0;
+  state.awaitingAnswer = false;
+  state.followUpMode = false;
+
+  const topicData = TOPICS[topic];
+  if (!state.topicScores[topic]) state.topicScores[topic] = [];
+
+  // Badge active topic
+  document.querySelectorAll('.topic-chip').forEach(c => c.classList.remove('active'));
+  const chip = document.querySelector(`[data-topic="${topic}"]`);
+  if (chip) chip.classList.add('active');
+
+  const badgeMap = { dsa:'dsa', oop:'code', dbms:'dsa', os:'code', cn:'code', webdev:'code', aiml:'code', hr:'hr', system:'system' };
+  setModeBadge(topicData.label, badgeMap[topic] || 'dsa');
+
+  // Show input area
+  document.getElementById('input-area').style.display = 'block';
+
+  startTimer();
+
+  const companyNote = state.company !== 'general' ? ` in the style of <strong>${state.company}</strong>` : '';
+  const levelNote = { fresher: 'entry-level', mid: 'mid-level', senior: 'senior-level' }[state.level] || '';
+
+  setTimeout(() => {
+    showTyping();
+    setTimeout(() => {
+      removeTyping();
+      addMessage('bot', `🎯 Starting <strong>${topicData.label}</strong> interview session${companyNote}.<br><br>I'll ask you questions at <strong>${levelNote}</strong> difficulty and evaluate your answers in detail. Take your time and be as comprehensive as possible.<br><br>Remember: Think out loud! Real interviewers value your thought process. Ready? Here's your first question:`);
+
+      setTimeout(() => {
+        askNextQuestion();
+      }, 1500);
+    }, 1200);
+  }, 400);
+}
+
+function askNextQuestion() {
+  const topicData = TOPICS[state.currentTopic];
+  const questions = topicData.questions;
+
+  if (state.currentQuestionIdx >= questions.length) {
+    endSession();
+    return;
+  }
+
+  const q = questions[state.currentQuestionIdx];
+  state.awaitingAnswer = true;
+
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    const diffBadge = { easy: '🟢 Easy', medium: '🟡 Medium', hard: '🔴 Hard' }[q.difficulty] || '';
+    addMessage('bot', `<strong>Question ${state.questionCount + 1}</strong> &nbsp; <span style="opacity:0.6;font-size:12px">${diffBadge}</span><br><br>${q.q}`);
+  }, 800 + Math.random() * 400);
+}
+
+function handleInterviewAnswer(answer) {
+  if (!state.awaitingAnswer) return;
+  state.awaitingAnswer = false;
+
+  const topicData = TOPICS[state.currentTopic];
+  const q = state.followUpMode
+    ? { ...topicData.questions[state.currentQuestionIdx - 1], q: state.followUpQuestion, ideal: topicData.questions[state.currentQuestionIdx - 1].ideal, keywords: topicData.questions[state.currentQuestionIdx - 1].keywords }
+    : topicData.questions[state.currentQuestionIdx];
+
+  const { score, matched } = evaluateAnswer(answer, q);
+  state.scores.push(score);
+  state.topicScores[state.currentTopic] = state.topicScores[state.currentTopic] || [];
+  state.topicScores[state.currentTopic].push(score);
+  state.questionCount++;
+
+  if (score < 5) state.weakTopics.push(state.currentTopic);
+  else if (score >= 8) state.strongTopics.push(state.currentTopic);
+
+  // Update difficulty
+  const avg = state.scores.reduce((a,b)=>a+b,0)/state.scores.length;
+  if (avg >= 8) state.difficulty = 'hard';
+  else if (avg >= 6) state.difficulty = 'medium';
+  else state.difficulty = 'easy';
+
+  updateStats();
+
+  // Show feedback
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    const feedbackHtml = buildFeedbackCard(score, matched, q, answer);
+    addMessage('bot', `✅ Answer received. Here's my detailed evaluation:`, feedbackHtml);
+
+    // Decide next step
+    setTimeout(() => {
+      if (!state.followUpMode && q.followUp && score >= 4) {
+        // Ask follow-up
+        state.followUpMode = true;
+        state.followUpQuestion = q.followUp;
+        state.awaitingAnswer = true;
+
+        showTyping();
+        setTimeout(() => {
+          removeTyping();
+          addMessage('bot', `💬 <strong>Follow-up Question:</strong><br><br>${q.followUp}`);
+        }, 800);
+      } else {
+        state.followUpMode = false;
+        state.currentQuestionIdx++;
+        showNextOptions();
+      }
+    }, 1200);
+  }, 1000 + Math.random() * 500);
+}
+
+function showNextOptions() {
+  const topicData = TOPICS[state.currentTopic];
+  const hasMore = state.currentQuestionIdx < topicData.questions.length;
+
+  addMessage('bot', `What would you like to do next?`);
+  const opts = [];
+  if (hasMore) opts.push({ label: '➡️ Next Question', value: '__next__' });
+  opts.push({ label: '🔀 Change Topic', value: '__change__' });
+  opts.push({ label: '📊 View Summary', value: '__summary__' });
+  showOptions(opts);
+}
+
+function endSession() {
+  const avg = state.scores.length > 0
+    ? (state.scores.reduce((a,b)=>a+b,0)/state.scores.length).toFixed(1)
+    : 'N/A';
+
+  addMessage('bot', `
+    🎉 <strong>Interview Session Complete!</strong><br><br>
+    📊 <strong>Overall Performance:</strong><br>
+    • Questions Answered: ${state.questionCount}<br>
+    • Average Score: ${avg}/10<br>
+    • Best Score: ${state.scores.length ? Math.max(...state.scores) : 'N/A'}/10<br><br>
+    ${state.weakTopics.length ? `📚 <strong>Focus Areas:</strong> ${[...new Set(state.weakTopics)].map(t => TOPICS[t]?.label).join(', ')}<br>` : ''}
+    ${state.strongTopics.length ? `💪 <strong>Strong Areas:</strong> ${[...new Set(state.strongTopics)].map(t => TOPICS[t]?.label).join(', ')}<br>` : ''}
+    <br>Use the <strong>New Interview Session</strong> button to start a fresh session!
+  `);
+  clearInterval(state.timerInterval);
+}
+
+// ═══════════════════════════════════════════════════
+//  USER MESSAGE HANDLER
+// ═══════════════════════════════════════════════════
+function handleUserMessage(value, label) {
+  removeOptions();
+  addMessage('user', label || value);
+
+  if (state.phase === 'welcome' || state.phase === 'setup') {
+    state.phase = 'setup';
+    progressSetup(value, label);
+    return;
+  }
+
+  if (state.phase === 'interview') {
+    if (value === '__next__') {
+      state.awaitingAnswer = false;
+      askNextQuestion();
+      return;
+    }
+    if (value === '__change__') {
+      state.setupStep = 3;
+      state.phase = 'setup';
+      setTimeout(() => {
+        showTyping();
+        setTimeout(() => {
+          removeTyping();
+          addMessage('bot', 'Choose a topic for your next set of questions:');
+          showOptions(setupSteps[3].options);
+        }, 700);
+      }, 300);
+      return;
+    }
+    if (value === '__summary__') {
+      endSession();
+      return;
+    }
+    if (state.awaitingAnswer) {
+      handleInterviewAnswer(value);
+      return;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  INPUT EVENTS
+// ═══════════════════════════════════════════════════
+const inputBox = document.getElementById('user-input');
+const sendBtn = document.getElementById('send-btn');
+
+function sendMessage() {
+  const text = inputBox.value.trim();
+  if (!text) return;
+  inputBox.value = '';
+  inputBox.style.height = 'auto';
+
+  if (state.phase === 'interview' && state.awaitingAnswer) {
+    handleUserMessage(text, text);
+  } else if (state.phase === 'interview') {
+    // Free-form command parsing
+    const lower = text.toLowerCase();
+    if (lower.includes('next')) handleUserMessage('__next__', 'Next question');
+    else if (lower.includes('change') || lower.includes('topic')) handleUserMessage('__change__', 'Change topic');
+    else if (lower.includes('summary') || lower.includes('score')) handleUserMessage('__summary__', 'View summary');
+    else {
+      addMessage('user', text);
+      addMessage('bot', `I'm currently waiting for an answer. Type <strong>next</strong> for the next question, <strong>change topic</strong>, or <strong>summary</strong> to see your results.`);
+    }
+  } else {
+    handleUserMessage(text, text);
+  }
+}
+
+inputBox.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+inputBox.addEventListener('input', () => {
+  inputBox.style.height = 'auto';
+  inputBox.style.height = Math.min(inputBox.scrollHeight, 140) + 'px';
+});
+
+sendBtn.addEventListener('click', sendMessage);
+
+// ═══════════════════════════════════════════════════
+//  SIDEBAR TOPIC CLICK
+// ═══════════════════════════════════════════════════
+document.querySelectorAll('.topic-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    if (state.phase === 'interview' || state.phase === 'setup') {
+      removeOptions();
+      const topic = chip.dataset.topic;
+      state.setupStep = 3;
+      state.phase = 'setup';
+      progressSetup(topic, chip.querySelector('span:last-child')?.previousElementSibling?.textContent || topic);
+    }
+  });
+});
+
+// New Interview Button
+document.getElementById('btn-new-interview').addEventListener('click', () => {
+  // Reset state
+  Object.assign(state, {
+    phase: 'setup', role: '', level: '', company: '', currentTopic: '',
+    currentQuestionIdx: 0, scores: [], topicScores: {}, questionCount: 0,
+    awaitingAnswer: false, setupStep: 0, timerSec: 0, followUpMode: false,
+    followUpQuestion: '', difficulty: 'easy', weakTopics: [], strongTopics: []
+  });
+  clearInterval(state.timerInterval);
+
+  // Reset UI
+  chatArea.innerHTML = '';
+  document.getElementById('stat-questions').textContent = '0';
+  document.getElementById('stat-avg').textContent = '—';
+  document.getElementById('stat-best').textContent = '—';
+  document.getElementById('stat-level').textContent = '—';
+  document.getElementById('ring-num').textContent = '0%';
+  document.getElementById('ring-circle').style.strokeDashoffset = '163.4';
+  document.querySelectorAll('.score-bar-fill').forEach(b => b.style.width = '0%');
+  document.querySelectorAll('.topic-chip').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.topic-badge').forEach(b => b.textContent = '—');
+  document.getElementById('timer').textContent = '00:00';
+  document.getElementById('input-area').style.display = 'none';
+
+  // Start setup
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    addMessage('bot', setupSteps[0].msg);
+    showOptions(setupSteps[0].options);
+  }, 700);
+});
+
+// ═══════════════════════════════════════════════════
+//  START BUTTON (welcome screen)
+// ═══════════════════════════════════════════════════
+document.getElementById('start-btn').addEventListener('click', () => {
+  state.phase = 'setup';
+  document.getElementById('welcome-screen').remove();
+
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    addMessage('bot', setupSteps[0].msg);
+    showOptions(setupSteps[0].options);
+  }, 800);
+});
+</script>
+</body>
+</html>
